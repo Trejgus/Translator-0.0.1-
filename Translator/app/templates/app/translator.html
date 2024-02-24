@@ -1,0 +1,91 @@
+{% extends "app/base.html" %}
+{% load static %}
+
+{% block title %}Traggle Переводчик{% endblock title %}
+{% block head %}
+<link rel="stylesheet" href="{% static "app/css/loading.css" %}">
+<style>
+  .loader-container {
+    position: relative;
+  }
+
+  content-center {
+    height: 10em;
+    display: flex;
+    align-items: center;
+    justify-content: center }
+  div.container6 p {
+    margin: 0 }
+
+</style>
+{% endblock head %}
+
+{% block body %}
+<form method="post" id='translatorForm'>
+  {% csrf_token %}
+<div class="p-5 mb-4 rounded-3 text-center col-lg-10" style="margin-left: auto; margin-right: auto">
+    <div class="card-body">
+        <div class="container text-center">
+            <div class="row">
+              <div class="col">
+                {{form.from_lan}}
+                <br>
+                <br>
+                {{form.text}}
+              </div>
+              <div class="col-1 text-center">
+                <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" fill="currentColor" class="bi bi-arrow-right" viewBox="0 0 16 16" style="margin-top: 7rem;">
+                    <path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8z"/>
+                  </svg>
+              </div>
+              <div class="col">
+                  {{form.to_lan}}
+                  <br>
+                  <br>
+                <div class='loader-container'>
+                  <textarea class="p-2 w-100 bg-body-tertiary rounded-3" id="resultTextArea" disabled rows="6" style='resize: none;'></textarea>
+                  <div class='ring-of-dots' style="display: none" id='loading'></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <br>
+          <br>
+    </div>
+  </div>
+<!--  
+<div class="p-5 mb-4 bg-body-tertiary rounded-3 col-lg-10" style="margin-left: auto; margin-right: auto">
+    <h1 class="display-4 fw-bold text-body-emphasis">Выберите Переводчика</h1>
+    <br>
+    <div class="form-check">
+      {% comment %} <input class="form-check-input" type="radio" name="translator" id="flexRadioDefault1" value="tr" checked> {% endcomment %}
+      <div checked>
+      {{form.translator.0.tag}}
+      </div>
+      <label class="form-check-label" for="flexRadioDefault1">
+        Traggle Translate
+      </label>
+    </div>
+    <div class="form-check">
+      {{form.translator.1.tag}}
+      <label class="form-check-label" for="flexRadioDefault2">
+        {% comment %} <img src="data:image/png;base64,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" alt=""> {% endcomment %}
+        Google Translate
+      </label>
+    </div>
+  </div>
+-->
+</form>
+
+<div class="p-5 mb-4 bg-body-tertiary rounded-3 col-lg-10" style="margin-left: auto; margin-right: auto">
+  <h1 class="display-4 fw-bold text-body-emphasis text-center">Выберите Переводчика</h1>
+  <br>
+{% for radio in translators.choice_translator %}
+    {{ radio }}
+    <br>
+{% endfor %}
+</div>
+
+<script src={% static "app/js/translator.js" %}></script>
+
+{% endblock body %}
